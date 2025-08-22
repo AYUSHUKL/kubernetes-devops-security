@@ -19,5 +19,12 @@ pipeline {
               }
         } 
     }
+    stage('Docker build and push') {
+        steps{
+            sh 'printenv'
+            sh 'docker build -t shukayu/numeric-app:"GIT_COMMIT" '
+            sh 'docker push shukayu/numeric-app:"GIT_COMMIT"'
+        }
+    }
 }
 }
