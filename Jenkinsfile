@@ -32,17 +32,15 @@ pipeline {
 
     stage('k8 deployment') {
       steps {
-        sh '''
-          set -euxo pipefail
-          IMAGE="shukayu/numeric-app:${GIT_COMMIT}"
+        sh '''#!/bin/bash
+  set -euxo pipefail
+  IMAGE="shukayu/numeric-app:${GIT_COMMIT}"
 
-          # substitute image and apply to Kubernetes
-          sed "s#replace#${IMAGE}#g" k8s_PROD-deployment_service.yaml | kubectl -n prod apply -f -
+  sed "s#replace#${IMAGE}#g" k8s_PROD-deployment_service.yaml | kubectl -n prod apply -f -
+  kubectl -n prod rollout status deploy/numeric-app --timeout=180s || true
+  kubectl -n prod get pods -l app=numeric-app -o wide
+'''
 
-          # rollout and show status
-          kubectl -n prod rollout status deploy/numeric-app --timeout=180s || true
-          kubectl -n prod get pods -l app=numeric-app -o wide
-        '''
       }
     }
   }
