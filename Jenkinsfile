@@ -36,7 +36,7 @@ pipeline {
   set -euxo pipefail
   IMAGE="shukayu/numeric-app:${GIT_COMMIT}"
 
-  sed "s#replace#${IMAGE}#g" k8s_deployment_service.yamll | kubectl -n prod apply -f -
+  sed "s#replace#${IMAGE}#g" k8s_deployment_service.yaml | kubectl -n prod apply -f -
   kubectl -n prod rollout status deploy/numeric-app --timeout=180s || true
   kubectl -n prod get pods -l app=numeric-app -o wide
 '''
