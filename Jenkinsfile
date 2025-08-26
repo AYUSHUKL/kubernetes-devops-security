@@ -32,20 +32,17 @@ pipeline {
 
     stage('k8 deployment') {
       steps {
-        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KCFG')]) {
-          sh '''
-            set -euxo pipefail
-            export KUBECONFIG="$KCFG"
+        sh '''
+          set -euxo pipefail
+          IMAGE="shukayu/numeric-app:${GIT_COMMIT}"
 
-            IMAGE="shukayu/numeric-app:${GIT_COMMIT}"
+          # substitute image and apply to Kubernetes
+          sed "s#replace#${IMAGE}#g" k8s_PROD-deployment_service.yaml | kubectl -n prod apply -f -
 
-            # Don’t mutate the repo file; substitute on the fly and pipe to kubectl
-            sed "s#replace#${IMAGE}#g" k8s_PROD-deployment_service.yaml | kubectl -n prod apply -f -
-
-            kubectl -n prod rollout status deploy/numeric-app --timeout=180s || true
-            kubectl -n prod get pods -l app=numeric-app -o wide
-          '''
-        }
+          # rollout and show status
+          kubectl -n prod rollout status deploy/numeric-app --timeout=180s || true
+          kubectl -n prod get pods -l app=numeric-app -o wide
+        '''
       }
     }
   }
